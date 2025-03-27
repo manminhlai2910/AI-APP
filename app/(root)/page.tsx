@@ -1,50 +1,50 @@
-import InterviewCard from "@/components/InterviewCard";
-import { Button } from "@/components/ui/button";
-import { dummyInterviews } from "@/constants";
-import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import Image from "next/image";
 
-const Page = () => {
+import { Button } from "@/components/ui/button";
+import InterviewCard from "@/components/InterviewCard";
+
+import { getCurrentUser } from "@/lib/actions/auth.action";
+
+async function Home() {
+  const user = await getCurrentUser();
+
   return (
     <>
       <section className="card-cta">
         <div className="flex flex-col gap-6 max-w-lg">
-          <h2>Get Interview Ready with AI Powered Practice & Feedback</h2>
+          <h2>Get Interview-Ready with AI-Powered Practice & Feedback</h2>
           <p className="text-lg">
-            Practice on real interview questions & get instant feedback
+            Practice real interview questions & get instant feedback
           </p>
+
           <Button asChild className="btn-primary max-sm:w-full">
-            <Link href={"/interview"}>Start an Interview</Link>
+            <Link href="/interview">Start an Interview</Link>
           </Button>
         </div>
+
         <Image
-          src={"/robot.png"}
-          alt=""
+          src="/robot.png"
+          alt="robo-dude"
           width={400}
           height={400}
           className="max-sm:hidden"
         />
       </section>
+
       <section className="flex flex-col gap-6 mt-8">
         <h2>Your Interviews</h2>
-        <div className="interviews-section">
-          {dummyInterviews.map((interview) => (
-            <InterviewCard key={interview.id} {...interview} />
-          ))}
-          {/* <p>You haven't taken any interviews</p> */}
-        </div>
+
+        <div className="interviews-section"></div>
       </section>
+
       <section className="flex flex-col gap-6 mt-8">
-        <h2>Take an Interview</h2>
-        <div className="interviews-section">
-          {dummyInterviews.map((interview) => (
-            <InterviewCard key={interview.id} {...interview} />
-          ))}
-        </div>
+        <h2>Take Interviews</h2>
+
+        <div className="interviews-section"></div>
       </section>
     </>
   );
-};
+}
 
-export default Page;
+export default Home;
