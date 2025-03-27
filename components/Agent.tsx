@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { vapi } from "@/lib/vapi.sdk";
 import { interviewer } from "@/constants";
+import { createFeedback } from "@/lib/actions/general.action";
 
 enum CallStatus {
   INACTIVE = "INACTIVE",
@@ -20,7 +21,14 @@ interface SavedMessage {
   content: string;
 }
 
-const Agent = ({ userName, userId, type }: AgentProps) => {
+const Agent = ({
+  userName,
+  userId,
+  interviewId,
+  feedbackId,
+  type,
+  questions,
+}: AgentProps) => {
   const router = useRouter();
   const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
   const [messages, setMessages] = useState<SavedMessage[]>([]);
@@ -81,6 +89,20 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
 
     const handleGenerateFeedback = async (messages: SavedMessage[]) => {
       console.log("handleGenerateFeedback");
+
+      const { success, feedbackId: id } = await createFeedback({
+        interviewId: interviewId!,
+        userId: userId!,
+        transcript: messages,
+        feedbackId,
+      });
+
+      if (success && id) {
+        router.push(`/interview/${interviewId}/feedback`);
+      } else {
+        console.log("Error saving feedback");
+        router.push("/");
+      }
     };
 
     if (callStatus === CallStatus.FINISHED) {
@@ -90,7 +112,7 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
         handleGenerateFeedback(messages);
       }
     }
-  }, [messages, callStatus, router, type, userId]);
+  }, [messages, callStatus, feedbackId, interviewId, router, type, userId]);
 
   const handleCall = async () => {
     setCallStatus(CallStatus.CONNECTING);
@@ -104,6 +126,11 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
       });
     } else {
       let formattedQuestions = "";
+      if (questions) {
+        formattedQuestions = questions
+          .map((question) => `- ${question}`)
+          .join("\n");
+      }
 
       await vapi.start(interviewer, {
         variableValues: {
@@ -117,10 +144,6 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
     setCallStatus(CallStatus.FINISHED);
     vapi.stop();
   };
-
-  const isCallInactiveOrFinished =
-    callStatus === "INACTIVE" || callStatus === "FINISHED";
-  CallStatus.FINISHED;
 
   return (
     <>
@@ -182,7 +205,9 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
             />
 
             <span className="relative">
-              {isCallInactiveOrFinished ? "Call" : ". . ."}
+              {callStatus === "INACTIVE" || callStatus === "FINISHED"
+                ? "Call"
+                : ". . ."}
             </span>
           </button>
         ) : (
