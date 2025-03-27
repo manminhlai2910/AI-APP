@@ -20,14 +20,7 @@ interface SavedMessage {
   content: string;
 }
 
-const Agent = ({
-  userName,
-  userId,
-  interviewId,
-  feedbackId,
-  type,
-  questions,
-}: AgentProps) => {
+const Agent = ({ userName, userId, type }: AgentProps) => {
   const router = useRouter();
   const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
   const [messages, setMessages] = useState<SavedMessage[]>([]);
@@ -97,7 +90,7 @@ const Agent = ({
         handleGenerateFeedback(messages);
       }
     }
-  }, [messages, callStatus, feedbackId, interviewId, router, type, userId]);
+  }, [messages, callStatus, router, type, userId]);
 
   const handleCall = async () => {
     setCallStatus(CallStatus.CONNECTING);
@@ -111,11 +104,6 @@ const Agent = ({
       });
     } else {
       let formattedQuestions = "";
-      if (questions) {
-        formattedQuestions = questions
-          .map((question) => `- ${question}`)
-          .join("\n");
-      }
 
       await vapi.start(interviewer, {
         variableValues: {
@@ -129,6 +117,10 @@ const Agent = ({
     setCallStatus(CallStatus.FINISHED);
     vapi.stop();
   };
+
+  const isCallInactiveOrFinished =
+    callStatus === "INACTIVE" || callStatus === "FINISHED";
+  CallStatus.FINISHED;
 
   return (
     <>
@@ -190,9 +182,7 @@ const Agent = ({
             />
 
             <span className="relative">
-              {callStatus === "INACTIVE" || callStatus === "FINISHED"
-                ? "Call"
-                : ". . ."}
+              {isCallInactiveOrFinished ? "Call" : ". . ."}
             </span>
           </button>
         ) : (
